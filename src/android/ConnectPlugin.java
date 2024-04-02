@@ -223,6 +223,7 @@ public class ConnectPlugin extends CordovaPlugin {
         });
     }
 
+
     @Override
     public void onResume(boolean multitasking) {
         super.onResume(multitasking);
