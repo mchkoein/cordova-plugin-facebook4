@@ -69,7 +69,13 @@
     [[FBSDKApplicationDelegate sharedInstance] application:[UIApplication sharedApplication] didFinishLaunchingWithOptions:launchOptions];
 
     // Activate the app
-    [FBSDKAppEvents activateApp];
+//     [FBSDKAppEvents activateWithCompletionHandler:^(BOOL success, NSError *error) {
+//     if (error) {
+//         NSLog(@"Failed to activate app with error: %@", error);
+//     } else {
+//         NSLog(@"App activated successfully");
+//     }
+// }];
     // Additional initialization or activation logic if needed
 }
 #pragma mark - Cordova commands
@@ -162,7 +168,7 @@
 
     // this will prevent from being unable to login after updating plugin or changing permissions
     // without refreshing there will be a cache problem. This simple call should fix the problems
-    [FBSDKAccessToken refreshCurrentAccessToken:nil];
+    // [FBSDKAccessToken refreshCurrentAccessToken:nil];
 
     FBSDKLoginManagerLoginResultBlock loginHandler = ^void(FBSDKLoginManagerLoginResult *result, NSError *error) {
         if (error) {
@@ -465,7 +471,7 @@
 
     // If we have permissions to request
     if ([permissions count] == 0){
-        [request startWithCompletionHandler:graphHandler];
+        [request startWithCompletion:graphHandler];
         return;
     }
 
@@ -500,7 +506,7 @@
             return;
         }
 
-        [request startWithCompletionHandler:graphHandler];
+        [request startWithCompletion:graphHandler];
     }];
 }
 
@@ -527,7 +533,7 @@
 
 - (void) activateApp:(CDVInvokedUrlCommand *)command
 {
-    [FBSDKAppEvents activateApp];
+    // [FBSDKAppEvents activateApp];
 }
 
 #pragma mark - Utility methods
