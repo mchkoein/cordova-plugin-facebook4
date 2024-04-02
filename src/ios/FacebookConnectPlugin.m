@@ -42,22 +42,36 @@
                                                  name:UIApplicationDidBecomeActiveNotification object:nil];
 }
 
-- (void) applicationDidFinishLaunching:(NSNotification *) notification {
+// - (void) applicationDidFinishLaunching:(NSNotification *) notification {
+//     NSDictionary* launchOptions = notification.userInfo;
+//     if (launchOptions == nil) {
+//         //launchOptions is nil when not start because of notification or url open
+//         launchOptions = [NSDictionary dictionary];
+//     }
+
+//     [[FBSDKApplicationDelegate sharedInstance] application:[UIApplication sharedApplication] didFinishLaunchingWithOptions:launchOptions];
+// }
+
+// - (void) applicationDidBecomeActive:(NSNotification *) notification {
+//     [AppEvents activateApp];
+//     if (self.applicationWasActivated == NO) {
+//         self.applicationWasActivated = YES;
+//         [self enableHybridAppEvents];
+//     }
+// }
+
+- (void)applicationDidFinishLaunching:(NSNotification *)notification {
     NSDictionary* launchOptions = notification.userInfo;
     if (launchOptions == nil) {
-        //launchOptions is nil when not start because of notification or url open
         launchOptions = [NSDictionary dictionary];
     }
 
+    // Initialize the Facebook SDK
     [[FBSDKApplicationDelegate sharedInstance] application:[UIApplication sharedApplication] didFinishLaunchingWithOptions:launchOptions];
-}
 
-- (void) applicationDidBecomeActive:(NSNotification *) notification {
-    [FBSDKAppEvents activateApp];
-    if (self.applicationWasActivated == NO) {
-        self.applicationWasActivated = YES;
-        [self enableHybridAppEvents];
-    }
+    // Activate the app
+    [AppEvents activateApp];
+    // Additional initialization or activation logic if needed
 }
 
 #pragma mark - Cordova commands
@@ -72,9 +86,9 @@
     // Return access token if available
     CDVPluginResult *pluginResult;
     // Check if the session is open or not
-    if ([FBSDKAccessToken currentAccessToken]) {
+    if ([AccessToken currentAccessToken]) {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:
-                        [FBSDKAccessToken currentAccessToken].tokenString];
+                        [AccessToken currentAccessToken].tokenString];
     } else {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:
                         @"Session not open."];
@@ -99,20 +113,20 @@
         double value;
 
         if ([command.arguments count] == 1) {
-            [FBSDKAppEvents logEvent:eventName];
+            [AppEvents logEvent:eventName];
 
         } else {
             // argument count is not 0 or 1, must be 2 or more
             params = [command.arguments objectAtIndex:1];
             if ([command.arguments count] == 2) {
                 // If count is 2 we will just send params
-                [FBSDKAppEvents logEvent:eventName parameters:params];
+                [AppEvents logEvent:eventName parameters:params];
             }
 
             if ([command.arguments count] >= 3) {
                 // If count is 3 we will send params and a value to sum
                 value = [[command.arguments objectAtIndex:2] doubleValue];
-                [FBSDKAppEvents logEvent:eventName valueToSum:value parameters:params];
+                [AppEvents logEvent:eventName valueToSum:value parameters:params];
             }
         }
         res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
@@ -133,7 +147,7 @@
     }
     double value = [[command.arguments objectAtIndex:0] doubleValue];
     NSString *currency = [command.arguments objectAtIndex:1];
-    [FBSDKAppEvents logPurchase:value currency:currency];
+    [AppEvents logPurchase:value currency:currency];
 
     res = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
@@ -150,7 +164,7 @@
 
     // this will prevent from being unable to login after updating plugin or changing permissions
     // without refreshing there will be a cache problem. This simple call should fix the problems
-    [FBSDKAccessToken refreshCurrentAccessToken:nil];
+    [AccessToken refreshCurrentAccessToken:nil];
 
     FBSDKLoginManagerLoginResultBlock loginHandler = ^void(FBSDKLoginManagerLoginResult *result, NSError *error) {
         if (error) {
@@ -172,7 +186,7 @@
     };
 
     // Check if the session is open or not
-    if ([FBSDKAccessToken currentAccessToken] == nil) {
+    if ([AccessToken currentAccessToken] == nil) {
         // Initial log in, can only ask to read
         // type permissions
         if (permissions == nil) {
@@ -215,7 +229,7 @@
         permissions = command.arguments;
     }
     
-    NSSet *grantedPermissions = [FBSDKAccessToken currentAccessToken].permissions; 
+    NSSet *grantedPermissions = [AccessToken currentAccessToken].permissions; 
 
     for (NSString *value in permissions) {
     	NSLog(@"Checking permission %@.", value);
@@ -235,7 +249,7 @@
 
 - (void) logout:(CDVInvokedUrlCommand*)command
 {
-    if ([FBSDKAccessToken currentAccessToken]) {
+    if ([AccessToken currentAccessToken]) {
         // Close the session and clear the cache
         if (self.loginManager == nil) {
             self.loginManager = [[FBSDKLoginManager alloc] init];
@@ -409,7 +423,7 @@
 - (void) graphApi:(CDVInvokedUrlCommand *)command
 {
     CDVPluginResult *pluginResult;
-    if (! [FBSDKAccessToken currentAccessToken]) {
+    if (! [AccessToken currentAccessToken]) {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
                                                           messageAsString:@"You are not logged in."];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
@@ -417,7 +431,7 @@
 
     NSString *graphPath = [command argumentAtIndex:0];
     NSArray *permissionsNeeded = [command argumentAtIndex:1];
-    NSSet *currentPermissions = [FBSDKAccessToken currentAccessToken].permissions;
+    NSSet *currentPermissions = [AccessToken currentAccessToken].permissions;
 
     // We will store here the missing permissions that we will have to request
     NSMutableArray *requestPermissions = [[NSMutableArray alloc] initWithArray:@[]];
@@ -433,7 +447,7 @@
     permissions = [requestPermissions copy];
 
     // Defines block that handles the Graph API response
-    FBSDKGraphRequestBlock graphHandler = ^(FBSDKGraphRequestConnection *connection, id result, NSError *error) {
+    GraphRequestBlock graphHandler = ^(GraphRequestConnection *connection, id result, NSError *error) {
         CDVPluginResult* pluginResult;
         if (error) {
             NSString *message = error.userInfo[FBSDKErrorLocalizedDescriptionKey] ?: @"There was an error making the graph call.";
@@ -449,7 +463,7 @@
     };
 
     NSLog(@"Graph Path = %@", graphPath);
-    FBSDKGraphRequest *request = [[FBSDKGraphRequest alloc] initWithGraphPath:graphPath];
+    GraphRequest *request = [[GraphRequest alloc] initWithGraphPath:graphPath];
 
     // If we have permissions to request
     if ([permissions count] == 0){
@@ -515,7 +529,7 @@
 
 - (void) activateApp:(CDVInvokedUrlCommand *)command
 {
-    [FBSDKAppEvents activateApp];
+    [AppEvents activateApp];
 }
 
 #pragma mark - Utility methods
@@ -564,12 +578,12 @@
 
 - (NSDictionary *)responseObject {
 
-    if (![FBSDKAccessToken currentAccessToken]) {
+    if (![AccessToken currentAccessToken]) {
         return @{@"status": @"unknown"};
     }
 
     NSMutableDictionary *response = [[NSMutableDictionary alloc] init];
-    FBSDKAccessToken *token = [FBSDKAccessToken currentAccessToken];
+    AccessToken *token = [AccessToken currentAccessToken];
 
     NSTimeInterval expiresTimeInterval = token.expirationDate.timeIntervalSinceNow;
     NSString *expiresIn = @"0";
@@ -671,7 +685,7 @@
     if ([self.webView isMemberOfClass:[WKWebView class]]){
         NSString *is_enabled = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"FacebookHybridAppEvents"];
         if([is_enabled isEqualToString:@"true"]){
-            [FBSDKAppEvents augmentHybridWKWebView:(WKWebView*)self.webView];
+            [AppEvents augmentHybridWKWebView:(WKWebView*)self.webView];
             NSLog(@"FB Hybrid app events are enabled");
         } else {
             NSLog(@"FB Hybrid app events are not enabled");
