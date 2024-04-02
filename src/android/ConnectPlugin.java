@@ -227,7 +227,7 @@ public class ConnectPlugin extends CordovaPlugin {
     public void onResume(boolean multitasking) {
         super.onResume(multitasking);
         // Developers can observe how frequently users activate their app by logging an app activation event.
-        AppEventsLogger.activateApp(cordova.getActivity().getApplication());
+        // AppEventsLogger.activateApp(cordova.getActivity().getApplication());
     }
 
     @Override
@@ -305,7 +305,7 @@ public class ConnectPlugin extends CordovaPlugin {
             cordova.getThreadPool().execute(new Runnable() {
                 @Override
                 public void run() {
-                    AppEventsLogger.activateApp(cordova.getActivity().getApplication());
+                    // AppEventsLogger.activateApp(cordova.getActivity().getApplication());
                 }
             });
 
