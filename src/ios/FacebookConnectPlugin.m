@@ -42,42 +42,43 @@
                                                  name:UIApplicationDidBecomeActiveNotification object:nil];
 }
 
-// - (void) applicationDidFinishLaunching:(NSNotification *) notification {
-//     NSDictionary* launchOptions = notification.userInfo;
-//     if (launchOptions == nil) {
-//         //launchOptions is nil when not start because of notification or url open
-//         launchOptions = [NSDictionary dictionary];
-//     }
-
-//     [[FBSDKApplicationDelegate sharedInstance] application:[UIApplication sharedApplication] didFinishLaunchingWithOptions:launchOptions];
-// }
-
-// - (void) applicationDidBecomeActive:(NSNotification *) notification {
-//     [FBSDKAppEvents activateApp];
-//     if (self.applicationWasActivated == NO) {
-//         self.applicationWasActivated = YES;
-//         [self enableHybridAppEvents];
-//     }
-// }
-- (void)applicationDidFinishLaunching:(NSNotification *)notification {
+- (void) applicationDidFinishLaunching:(NSNotification *) notification {
     NSDictionary* launchOptions = notification.userInfo;
     if (launchOptions == nil) {
+        //launchOptions is nil when not start because of notification or url open
         launchOptions = [NSDictionary dictionary];
     }
 
-    // Initialize the Facebook SDK
     [[FBSDKApplicationDelegate sharedInstance] application:[UIApplication sharedApplication] didFinishLaunchingWithOptions:launchOptions];
-
-    // Activate the app
-//     [FBSDKAppEvents activateWithCompletionHandler:^(BOOL success, NSError *error) {
-//     if (error) {
-//         NSLog(@"Failed to activate app with error: %@", error);
-//     } else {
-//         NSLog(@"App activated successfully");
-//     }
-// }];
-    // Additional initialization or activation logic if needed
 }
+
+- (void) applicationDidBecomeActive:(NSNotification *) notification {
+    [[FBSDKAppEvents sharedInstance] activateApp];
+    if (self.applicationWasActivated == NO) {
+        self.applicationWasActivated = YES;
+        [self enableHybridAppEvents];
+    }
+}
+
+// - (void)applicationDidFinishLaunching:(NSNotification *)notification {
+//     NSDictionary* launchOptions = notification.userInfo;
+//     if (launchOptions == nil) {
+//         launchOptions = [NSDictionary dictionary];
+//     }
+
+//     // Initialize the Facebook SDK
+//     [[FBSDKApplicationDelegate sharedInstance] application:[UIApplication sharedApplication] didFinishLaunchingWithOptions:launchOptions];
+
+//     // Activate the app
+// //     [FBSDKAppEvents activateWithCompletionHandler:^(BOOL success, NSError *error) {
+// //     if (error) {
+// //         NSLog(@"Failed to activate app with error: %@", error);
+// //     } else {
+// //         NSLog(@"App activated successfully");
+// //     }
+// // }];
+//     // Additional initialization or activation logic if needed
+// }
 #pragma mark - Cordova commands
 
 - (void)getLoginStatus:(CDVInvokedUrlCommand *)command {
@@ -533,7 +534,7 @@
 
 - (void) activateApp:(CDVInvokedUrlCommand *)command
 {
-    // [FBSDKAppEvents activateApp];
+    [[FBSDKAppEvents sharedInstance] activateApp];
 }
 
 #pragma mark - Utility methods
