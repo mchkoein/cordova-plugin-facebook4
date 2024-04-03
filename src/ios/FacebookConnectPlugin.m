@@ -53,7 +53,7 @@
 }
 
 - (void) applicationDidBecomeActive:(NSNotification *) notification {
-    [[FBSDKAppEvents sharedInstance] activateApp];
+    [[FBSDKAppEvents shared] activateApp];
     if (self.applicationWasActivated == NO) {
         self.applicationWasActivated = YES;
         [self enableHybridAppEvents];
@@ -534,7 +534,7 @@
 
 - (void) activateApp:(CDVInvokedUrlCommand *)command
 {
-    [[FBSDKAppEvents sharedInstance] activateApp];
+    [[FBSDKAppEvents shared] activateApp];
 }
 
 #pragma mark - Utility methods
