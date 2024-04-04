@@ -1,7 +1,8 @@
 <a name="6.5.0"></a>
-# [6.5.0 Unofficial](https://github.com/mchkoein/cordova-plugin-facebook4/releases/tag/v6.5.0)
 
-## Updates
+# 6.5.0 Unofficial
+
+## Features
 
 * **Android:** sync code with Facebook sdk 13 for android.
 * **iOS:** sync code with Facebook sdk 12 for iOS.
